@@ -1,0 +1,10 @@
+  {
+      "WALG_S3_PREFIX": "s3://${BACKET_NAME_A}",
+      "AWS_ENDPOINT": "https://hb.bizmrg.com",
+      "AWS_ACCESS_KEY_ID": "${KEY_ID_A}",
+      "AWS_SECRET_ACCESS_KEY": "${SECRET_KOD_A}",
+      "WALG_COMPRESSION_METHOD": "brotli",
+      "WALG_DELTA_MAX_STEPS": "5",
+      "PGDATA": "/var/lib/pgpro/1c-${PG_VERSION}/data",
+      "PGHOST": "/tmp/.s.PGSQL.5432"
+  }

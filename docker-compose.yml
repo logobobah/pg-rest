@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+
+  postgres:
+       image: logobobah/postgresql-1c-walg:4
+       restart: always
+       ports:
+         - "54${PORT_RANG}:5432"
+
+       volumes:
+         - pg_data1:/var/lib/pgpro/1c-13/data/
+
+       networks:
+         - back_net
+
+volumes:
+
+  pg_data1: {}
+
+networks:
+  back_net: {}

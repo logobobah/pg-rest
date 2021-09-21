@@ -1,0 +1,1 @@
+docker build logobobah/postgresql-1c-walg:6
