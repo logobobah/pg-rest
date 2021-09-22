@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
+
+echo '2222'
+
 source ${PG_APP_HOME}/functions
+
+echo '4444'
 
 [[ ${DEBUG} == true ]] && set -x
 
