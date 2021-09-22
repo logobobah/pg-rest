@@ -51,17 +51,20 @@ if [[ ${IsEmpty} = "0" ]]; then
    echo "настроили права"
 fi
 
-if [[  -d ${PG_DATADIR} ]] ; then
-  echo "настраиваем права 66"
-  chown -R postgres:postgres ${PG_DATADIR} 
-  chmod 700  ${PG_DATADIR} 
-fi
+#if [[  -d ${PG_DATADIR} ]] ; then
+#  echo "настраиваем права 66"
+#  chown -R postgres:postgres ${PG_DATADIR} 
+#  chmod 700  ${PG_DATADIR} 
+#fi
 
-  configure_postgresql
+  
 
   
  
 if [[ ${PG_RESTORE} = "restore" ]] && [[ ${IsEmpty} = 1 ]]; then
+
+    configure_postgresql
+    
      rm -rf ${PG_DATADIR}/*
      echo "востанавливаем данные"
      
@@ -86,8 +89,8 @@ fi
 
   
   configure_postgresql
-  chown -R postgres:postgres ${PG_DATADIR} 
-  chmod 700  ${PG_DATADIR} 
+#  chown -R postgres:postgres ${PG_DATADIR} 
+#  chmod 700  ${PG_DATADIR} 
   echo "Starting PostgreSQL ${PG_VERSION}..."
   exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} \
     --exec ${PG_BINDIR}/postgres -- -D ${PG_DATADIR} ${EXTRA_ARGS}
