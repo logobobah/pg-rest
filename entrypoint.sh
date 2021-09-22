@@ -16,6 +16,7 @@ fi
 #!/bin/bash
 # "WALG_S3_PREFIX": "s3://${BACKET_NAME_R}",
 
+echo "123"
 
 if [[ ! -d ${PG_DATADIR} ]] ; then
    IsEmpty=1
@@ -64,7 +65,7 @@ fi
 if [[ ${PG_RESTORE} = "restore" ]] && [[ ${IsEmpty} = 1 ]]; then
 
     configure_postgresql
-    
+
      rm -rf ${PG_DATADIR}/*
      echo "востанавливаем данные"
      
