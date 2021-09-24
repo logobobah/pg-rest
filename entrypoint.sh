@@ -1,11 +1,7 @@
 #!/bin/bash
 set -e
 
-echo '2222'
-
 source ${PG_APP_HOME}/functions
-
-echo '4444'
 
 [[ ${DEBUG} == true ]] && set -x
 
@@ -20,8 +16,6 @@ fi
 
 #!/bin/bash
 # "WALG_S3_PREFIX": "s3://${BACKET_NAME_R}",
-
-echo "123"
 
 if [[ ! -d ${PG_DATADIR} ]] ; then
    IsEmpty=1
