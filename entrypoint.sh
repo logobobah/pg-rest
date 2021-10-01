@@ -14,8 +14,18 @@ elif [[ ${1} == postgres || ${1} == $(which postgres) ]]; then
   set --
 fi
 
-#!/bin/bash
-# "WALG_S3_PREFIX": "s3://${BACKET_NAME_R}",
+#cat > /var/lib/postgresql/.walg.json << EOF
+##{
+#    "WALG_S3_PREFIX": "s3://${BACKET_NAME_R}",
+#    "AWS_ENDPOINT": "https://hb.bizmrg.com",
+#    "AWS_ACCESS_KEY_ID": "${KEY_ID_R}",
+#    "AWS_SECRET_ACCESS_KEY": "${SECRET_KOD_R}",
+#    "WALG_COMPRESSION_METHOD": "brotli",
+#    "WALG_DELTA_MAX_STEPS": "5",
+#    "PGDATA": "/var/lib/pgpro/1c-${PG_VERSION}/data",
+#    "PGHOST": "/tmp/.s.PGSQL.5432"
+#}
+#EOF
 
 if [[ ! -d ${PG_DATADIR} ]] ; then
    IsEmpty=1
@@ -63,18 +73,22 @@ fi
  
 if [[ ${PG_RESTORE} = "restore" ]] && [[ ${IsEmpty} = 1 ]]; then
 
-    configure_postgresql
+     configure_postgresql
+    
+     set_pgbackrest_param "repo1-s3-bucket" ${BACKET_NAME_R}
+     set_pgbackrest_param "repo1-s3-key" ${KEY_ID_R}
+     set_pgbackrest_param "repo1-s3-key-secret" ${SECRET_KOD_R}
 
      rm -rf ${PG_DATADIR}/*
      echo "востанавливаем данные"
      
-     sudo -u postgres pgbackrest --stanza=demo restore
+     sudo -u postgres pgbackrest --stanza=demo  restore
 
-     echo "wal_level=replica" >> ${PG_DATADIR}/postgresql.conf
-     echo "archive_mode=off" >> ${PG_DATADIR}/postgresql.conf
+     #echo "wal_level=replica" >> ${PG_DATADIR}/postgresql.conf
+     #echo "archive_mode=off" >> ${PG_DATADIR}/postgresql.conf
      #chown -R postgres:postgres ${PG_DATADIR} 
      #chmod 700  ${PG_DATADIR} 
-     
+      
 fi
 
 

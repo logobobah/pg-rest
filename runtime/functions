@@ -91,6 +91,22 @@ set_recovery_param() {
   fi
 }
 
+set_pgbackrest_param() {
+  local key=${1}
+  local value=${2}
+  local hide=${3}
+  if [[ -n ${value} ]]; then
+    local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\(${key}=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_BACKREST_CONF} )
+    if [[ "${current}" != "${value}" ]]; then
+      case ${hide} in
+        true)  echo "‣ Setting primary_conninfo parameter: ${key}" ;;
+        *) echo "‣ Setting primary_conninfo parameter: ${key} = '${value}'" ;;
+      esac
+      exec_as_postgres sed -i "s|${key}=[^ ']*|${key}=${value}|" ${PG_BACKREST_CONF}
+    fi
+  fi
+}
+
 set_hba_param() {
   local value=${1}
   if ! grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
@@ -378,8 +394,10 @@ configure_postgresql() {
   # start postgres server internally for the creation of users and databases
   rm -rf ${PG_DATADIR}/postmaster.pid
   set_postgresql_param "listen_addresses" "127.0.0.1" quiet
+  echo "configure pg "
+  echo 
   exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w -t 1000 start >/dev/null
-
+  echo "end configure"
   create_user
   create_database
   create_replication_user
@@ -391,10 +409,7 @@ configure_postgresql() {
   set_postgresql_param "listen_addresses" "*" quiet
   set_postgresql_param "unix_socket_directories" "/var/run/postgresql" 
 
-if [[ ${PG_WAL_LEVEL} = "minimal" ]] ; then
-     set_postgresql_param "wal_level" "minimal"
-     set_postgresql_param "max_wal_senders" "0"
-fi
+
 
 if [[ ${PG_ARCHIVE} = "ARCHIVE" ]] ; then
      
@@ -408,8 +423,14 @@ if [[ ${PG_ARCHIVE} = "ARCHIVE" ]] ; then
       set_postgresql_param "archive_command" "pgbackrest --stanza=demo archive-push %p"
       set_postgresql_param "archive_mode" "on"
       set_postgresql_param "archive_timeout" "60"
+elif [[  ${PG_RESTORE} = "restore"  ]] ; then
 
+      set_postgresql_param "archive_mode" "on"
 
+elif [[ ${PG_WAL_LEVEL} = "minimal" ]] ; then
+
+      set_postgresql_param "wal_level" "minimal"
+      set_postgresql_param "max_wal_senders" "0"
 
 fi
 
