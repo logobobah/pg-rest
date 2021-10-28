@@ -35,7 +35,9 @@ elif [[  -d ${PG_DATADIR}  && -z "$(ls -A ${PG_DATADIR})" ]]; then
    echo "${PG_DATADIR} is Empty"
 else
    IsEmpty=0
-   #echo "${PG_DATADIR} is not empty"
+   echo "${PG_DATADIR} is not empty"
+   cd ${PG_DATADIR}
+   echo $(ls)
    echo "устанавливаем права на папку кластера"
    chown -R postgres:postgres /var/lib/pgpro/1c-13/data
    chmod 700  /var/lib/pgpro/1c-13/data
@@ -74,10 +76,11 @@ fi
 if [[ ${PG_RESTORE} = "restore" ]] && [[ ${IsEmpty} = 1 ]]; then
 
      configure_postgresql
-    
+     echo "настраиваем параметры востановления ${PG_BACKREST_CONF}"
      set_pgbackrest_param "repo1-s3-bucket" ${BACKET_NAME_R}
      set_pgbackrest_param "repo1-s3-key" ${KEY_ID_R}
      set_pgbackrest_param "repo1-s3-key-secret" ${SECRET_KOD_R}
+     set_pgbackrest_param "process-max" ${PG_BACKREST_PROCCES_MAX}
 
      rm -rf ${PG_DATADIR}/*
      echo "востанавливаем данные"
@@ -100,6 +103,8 @@ fi
   
   chown postgres:  -R /var/log/postgresql
   
+
+
 
   
   configure_postgresql

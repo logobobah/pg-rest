@@ -80,7 +80,7 @@ set_recovery_param() {
   local value=${2}
   local hide=${3}
   if [[ -n ${value} ]]; then
-    local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\(${key}=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
+    local current=$(sed -n -e "s/^\(.*\)\(${key}=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
     if [[ "${current}" != "${value}" ]]; then
       case ${hide} in
         true)  echo "‣ Setting primary_conninfo parameter: ${key}" ;;
@@ -102,7 +102,7 @@ set_pgbackrest_param() {
         true)  echo "‣ Setting primary_conninfo parameter: ${key}" ;;
         *) echo "‣ Setting primary_conninfo parameter: ${key} = '${value}'" ;;
       esac
-      exec_as_postgres sed -i "s|${key}=[^ ']*|${key}=${value}|" ${PG_BACKREST_CONF}
+      sudo sed -i "s|${key}=[^ ']*|${key}=${value}|" ${PG_BACKREST_CONF}
     fi
   fi
 }
@@ -402,6 +402,25 @@ configure_postgresql() {
   create_database
   create_replication_user
 
+  if [[ ${PG_ARCHIVE} = "archive" ]] ; then
+
+     #configure_postgresql
+     echo "настраиваем параметры архивации ${PG_BACKREST_CONF}"
+
+     #настраиваем postgresql
+     set_postgresql_param "archive_command" "pgbackrest --stanza=demo archive-push %p"
+     set_postgresql_param "archive_mode" "on"
+     set_postgresql_param "archive_timeout" "60"
+
+     set_pgbackrest_param "repo1-s3-bucket" ${BACKET_NAME_A}
+     set_pgbackrest_param "repo1-s3-key" ${KEY_ID_A}
+     set_pgbackrest_param "repo1-s3-key-secret" ${SECRET_KOD_A}
+     set_pgbackrest_param "process-max" ${PG_BACKREST_PROCCES_MAX}
+ 
+     sudo -u postgres pgbackrest --stanza=demo --log-level-console=info stanza-create
+
+fi
+
   # stop the postgres server
   exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
 
@@ -411,23 +430,15 @@ configure_postgresql() {
 
 
 
-if [[ ${PG_ARCHIVE} = "ARCHIVE" ]] ; then
-     
-     #настраиваем postgresql
-#     echo "wal_level=replica" >> ${PG_DATADIR}/postgresql.conf
-#    echo "archive_mode=on" >> ${PG_DATADIR}/postgresql.conf
-#     echo "archive_command='/usr/local/bin/wal-g wal-push \"%p\" >> /var/log/postgresql/archive_command.log 2>&1' " >> ${PG_DATADIR}/postgresql.conf
-#     echo "archive_timeout=60" >> ${PG_DATADIR}/postgresql.conf
-#     echo "restore_command='/usr/local/bin/wal-g wal-fetch \"%f\" \"%p\" >> /var/log/postgresql/restore_command.log 2>&1' " >> ${PG_DATADIR}/postgresql.conf
 
-      set_postgresql_param "archive_command" "pgbackrest --stanza=demo archive-push %p"
-      set_postgresql_param "archive_mode" "on"
-      set_postgresql_param "archive_timeout" "60"
-elif [[  ${PG_RESTORE} = "restore"  ]] ; then
+
+if [[  ${PG_RESTORE} = "restore"  ]] ; then
 
       set_postgresql_param "archive_mode" "on"
 
-elif [[ ${PG_WAL_LEVEL} = "minimal" ]] ; then
+fi
+
+if [[ ${PG_WAL_LEVEL} = "minimal" ]] ; then
 
       set_postgresql_param "wal_level" "minimal"
       set_postgresql_param "max_wal_senders" "0"
